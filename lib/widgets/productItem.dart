@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/providers/cart.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
 import 'package:flutter_complete_guide/screens/product_detail_screen.dart';
 import 'package:provider/provider.dart';
@@ -13,23 +14,31 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cart = Provider.of<Cart>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(25),
       child: GridTile(
         child: InkWell(
           onTap: () {
-            Navigator.of(context).pushNamed(
-              ProductDetailScreen.route,
-              arguments: product
-            );
+            Navigator.of(context)
+                .pushNamed(ProductDetailScreen.route, arguments: product);
           },
           child: Image.network(
             product.imageUrl,
             fit: BoxFit.cover,
-          ),
+          ), 
         ),
         footer: GridTileBar(
-          trailing: Icon(Icons.shopping_cart),
+          trailing: IconButton(
+            color: Colors.purple[200],
+            onPressed: () => cart.addItem(
+              CartItem(
+                item: product,
+                quantity: 1,
+              ),
+            ),
+            icon: Icon(Icons.shopping_cart),
+          ),
 
           title: Text(
             product.title,
@@ -41,7 +50,7 @@ class ProductItem extends StatelessWidget {
           //   onPressed: () {},
           //   alignment: Alignment.topRight,
           // ),
-    
+
           // leading: IconButton(
           //   icon: Icon(Icons.shop),
           //   onPressed: () {},

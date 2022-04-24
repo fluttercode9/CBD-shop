@@ -25,6 +25,7 @@ class ProductDetailScreen extends StatelessWidget {
                   : Icon(Icons.favorite_border))
         ],
       ),
+      floatingActionButton: FloatingActionButton(child: Icon(Icons.shopping_cart), onPressed: (){providerProduct.addProduct();},),
     );
   }
 }

@@ -12,13 +12,14 @@ class CartItem {
 }
 
 class Cart with ChangeNotifier {
-  Map<String, CartItem> _items;
+  Map<String, CartItem> _items = {};
 
   Map<String, CartItem> get items {
     return {..._items};
   }
 
   void addItem(CartItem cartItem) {
+    print('additem');
     if (_items.containsKey(cartItem.item.id)) {
       _items.update(
           cartItem.item.id,
@@ -30,5 +31,13 @@ class Cart with ChangeNotifier {
       _items.putIfAbsent(
           cartItem.item.id, () => CartItem(item: cartItem.item, quantity: 1));
     }
+    print('item added');
+    notifyListeners();
+  }
+
+  double get totalAmount {
+    double total = 0;
+    items.forEach((_, item) => total += item.item.price*item.quantity);
+    return total;
   }
 }
