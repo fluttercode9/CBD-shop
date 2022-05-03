@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/providers/cart.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
+import 'package:flutter_complete_guide/widgets/cart_badge.dart';
 import 'package:provider/provider.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -13,19 +15,51 @@ class ProductDetailScreen extends StatelessWidget {
       context,
       // listen: false,
     );
+    final cart = Provider.of<Cart>(context, listen: false);
     final loadedProduct = providerProduct.findById(product.id);
     return Scaffold(
       appBar: AppBar(
         title: Text(loadedProduct.title),
         actions: [
+          CartBadge(),
           IconButton(
-              onPressed: (() => providerProduct.toggleFavorite(loadedProduct.id)),
+              onPressed: (() =>
+                  providerProduct.toggleFavorite(loadedProduct.id)),
               icon: loadedProduct.isFavorite == true
                   ? Icon(Icons.favorite)
                   : Icon(Icons.favorite_border))
         ],
       ),
-      floatingActionButton: FloatingActionButton(child: Icon(Icons.shopping_cart), onPressed: (){providerProduct.addProduct();},),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.shopping_cart),
+        onPressed: () {
+          cart.addItem(CartItem(item: product, quantity: 1));
+        },
+      ),
+      body: SingleChildScrollView(
+
+        child: Column(
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.35,
+              width: MediaQuery.of(context).size.width,
+              child: Image.network(
+                loadedProduct.imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.attach_money),
+              title: Text('${loadedProduct.price} zł'),
+            ),
+            ListTile(
+              leading: Icon(Icons.description),
+              title: Text('${loadedProduct.description}'),
+            ),
+
+          ],
+        ),
+      ),
     );
   }
 }

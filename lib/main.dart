@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/screens/cart_screen.dart';
+import 'package:flutter_complete_guide/screens/orders_screen.dart';
+import 'package:flutter_complete_guide/widgets/my_drawer.dart';
+import '/providers/orders.dart';
+import '/screens/cart_screen.dart';
 import '/providers/products.dart';
 import 'package:provider/provider.dart';
 import 'providers/cart.dart';
@@ -18,19 +21,20 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(
           create: (ctx) => Cart(),
-        )
+        ),
+        ChangeNotifierProvider(create: (ctx)=> Orders())
       ],
       child: MaterialApp(
         title: 'CBD shop',
-
         theme: ThemeData(
-          primarySwatch: Colors.green,
+          primarySwatch: Colors.cyan,
           accentColor: Colors.deepPurple,
         ),
         home: ProductOverwiewScreen(),
         routes: {
           ProductDetailScreen.route: (ctx) => ProductDetailScreen(),
           CartScreen.route: (ctx) => CartScreen(),
+          OrdersScreen.route: (ctx) => OrdersScreen(),
         },
       ),
     );

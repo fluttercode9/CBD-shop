@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/cart.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
 import 'package:flutter_complete_guide/widgets/cart_badge.dart';
+import 'package:flutter_complete_guide/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
 import '../widgets/products_grid.dart';
 
 enum filterOptions { Favorites, All }
 
 class ProductOverwiewScreen extends StatefulWidget {
+    static const route = '/';
+
   @override
   State<ProductOverwiewScreen> createState() => _ProductOverwiewScreenState();
 }
@@ -17,8 +20,9 @@ class _ProductOverwiewScreenState extends State<ProductOverwiewScreen> {
   bool _showFavoritesOnly = false;
   @override
   Widget build(BuildContext context) {
-  // final cart = Provider.of<Cart>(context);
+    // final cart = Provider.of<Cart>(context);
     return Scaffold(
+      drawer: MyDrawer(),
       appBar: AppBar(
         actions: [
           CartBadge(),
