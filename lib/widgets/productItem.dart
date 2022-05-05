@@ -26,17 +26,42 @@ class ProductItem extends StatelessWidget {
           child: Image.network(
             product.imageUrl,
             fit: BoxFit.cover,
-          ), 
+          ),
         ),
         footer: GridTileBar(
           trailing: IconButton(
             color: Colors.purple[200],
-            onPressed: () => cart.addItem(
-              CartItem(
-                item: product,
-                quantity: 1,
-              ),
-            ),
+            onPressed: () {
+              //checks if item already in cart -- if not then adds
+              bool alreadyIn =
+                  cart.items.values.any((element) => element.item == product);
+              if (alreadyIn) {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Produkt znajduje się już w koszyku',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              } else {
+                cart.addItem(
+                  CartItem(
+                    item: product,
+                    quantity: 1,
+                  ),
+                );
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('${product.title} - dodano do koszyka'),
+                  action: SnackBarAction(
+                    label: 'Cofnij',
+                    onPressed: () => cart.removeItem(product.id),
+                  ),
+                ));
+              }
+            },
             icon: Icon(Icons.shopping_cart),
           ),
 

@@ -33,7 +33,7 @@ class ProductDetailScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.shopping_cart),
         onPressed: () {
-          cart.addItem(CartItem(item: product, quantity: 1));
+          cart.addItemWithCheck(context, cart, product);
         },
       ),
       body: SingleChildScrollView(

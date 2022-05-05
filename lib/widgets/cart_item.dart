@@ -13,6 +13,31 @@ class CartItem extends StatelessWidget {
     final cart = Provider.of<Cart>(context);
 
     return Dismissible(
+      confirmDismiss: (direction) {
+        return showDialog(
+          
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(
+                'Czy na pewno chcesz usunąć ${item.item.title} z koszyka?'),
+            actions: [
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context, true);
+                },
+                child: Text("Tak"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx, false);
+                },
+                child: Text("Nie"),
+              ),
+            ],
+          ),
+        );
+      },
       direction: DismissDirection.endToStart,
       onDismissed: (direction) {
         cart.removeItem(item.item.id);
@@ -52,9 +77,15 @@ class CartItem extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                        onPressed: () {cart.incrementQuantity(item.item.id);}, icon: Icon(Icons.arrow_upward)),
+                        onPressed: () {
+                          cart.incrementQuantity(item.item.id);
+                        },
+                        icon: Icon(Icons.arrow_upward)),
                     IconButton(
-                        onPressed: () {cart.decrementQuantity(item.item.id);}, icon: Icon(Icons.arrow_downward)),
+                        onPressed: () {
+                          cart.decrementQuantity(item.item.id);
+                        },
+                        icon: Icon(Icons.arrow_downward)),
                     Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Text(

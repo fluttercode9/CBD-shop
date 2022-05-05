@@ -57,7 +57,7 @@ class SumBar extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Suma: ${cart.totalAmount.toString()} zł ',
+                'Suma: ${(cart.totalAmount).toStringAsFixed(2)} zł ',
                 style: TextStyle(color: Colors.white, fontSize: 25),
               ),
             ),

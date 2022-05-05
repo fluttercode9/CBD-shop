@@ -71,4 +71,36 @@ class Cart with ChangeNotifier {
     _items = {};
     notifyListeners();
   }
+
+  void addItemWithCheck(BuildContext context, cart, product){
+     bool alreadyIn =
+                  cart.items.values.any((element) => element.item == product);
+              if (alreadyIn) {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Produkt znajduje się już w koszyku',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              } else {
+                cart.addItem(
+                  CartItem(
+                    item: product,
+                    quantity: 1,
+                  ),
+                );
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('${product.title} - dodano do koszyka'),
+                  action: SnackBarAction(
+                    label: 'Cofnij',
+                    onPressed: () => cart.removeItem(product.id),
+                  ),
+                ));
+              }
+  }
+  
 }
