@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
+import 'package:flutter_complete_guide/providers/products.dart';
+import 'package:flutter_complete_guide/screens/products_overwiew_screen.dart';
+import 'package:provider/provider.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const route = '/edit-product';
@@ -11,13 +14,28 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final myController = TextEditingController();
   String _imageUrl = ''; // final _priceFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
+  var _isInit = true;
+  Product _passedProd = null;
   Product _editedProduct = Product(
-      price: null, id: null, title: null, description: null, imageUrl: null);
+      price: null, id: DateTime.now().toString(), title: null, description: null, imageUrl: null);
   // @override
   void initState() {
     // TODO: implement initState
     super.initState();
     myController.addListener(_printLatestVal);
+  }
+
+  @override
+  void didChangeDependencies() {
+    if(_isInit){
+      _passedProd = ModalRoute.of(context).settings.arguments as Product;
+      if (_passedProd!=null){
+        _editedProduct = _passedProd;
+        _imageUrl = _editedProduct.imageUrl;
+      }
+    }
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
   }
 
   void _printLatestVal() {
@@ -37,8 +55,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (!_isValid) {
       return;
     }
+    if (_passedProd != null){
+           Provider.of<Products>(context, listen: false).deleteProduct(_editedProduct.id);
+
+    }
 
     _form.currentState.save();
+     Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+     Navigator.of(context).pushReplacementNamed(ProductOverwiewScreen.route);
     print(
         '${_editedProduct.description}${_editedProduct.imageUrl}${_editedProduct.price}${_editedProduct.title}');
   }
@@ -59,6 +83,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               Expanded(
                 child: ListView(children: [
                   TextFormField(
+                    initialValue: _editedProduct.title,
                     decoration: InputDecoration(labelText: 'Nazwa'),
                     textInputAction: TextInputAction.next,
                     onSaved: (val) {
@@ -83,6 +108,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // },
                   ),
                   TextFormField(
+                    initialValue: _editedProduct.price==null? "" :_editedProduct.price.toString(),
                     decoration: InputDecoration(labelText: 'Cena '),
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
@@ -105,6 +131,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // focusNode: _priceFocusNode,
                   ),
                   TextFormField(
+                    initialValue: _editedProduct.description,
                     maxLines: 3,
                     decoration: InputDecoration(labelText: 'Opis '),
                     keyboardType: TextInputType.multiline,
@@ -137,14 +164,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       ),
                       Expanded(
                         child: TextFormField(
+                          initialValue: _editedProduct.imageUrl,
                           decoration: InputDecoration(labelText: 'Image URL'),
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.done,
                           onChanged: (value) {
                             setState(() {
-                              if (!_imageUrl.startsWith('http')) {
-                                return 'Wpisz prawidlowy adres';
-                              } else
+                             
                                 _imageUrl = value;
                             });
                           },
