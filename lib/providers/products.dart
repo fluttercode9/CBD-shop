@@ -58,7 +58,8 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  void addProduct() {
+  void addProduct(Product product) {
+    _items.add(product);
     notifyListeners();
   }
 
@@ -69,5 +70,10 @@ class Products with ChangeNotifier {
   void toggleFavorite(id) {
     findById(id).isFavorite = !findById(id).isFavorite;
     notifyListeners();
+  }
+  void deleteProduct(id){
+    _items.removeWhere((element) => element.id == id);
+    notifyListeners();
+
   }
 }

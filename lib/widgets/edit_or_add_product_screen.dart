@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
+import 'package:flutter_complete_guide/providers/products.dart';
+import 'package:flutter_complete_guide/screens/products_overwiew_screen.dart';
+import 'package:flutter_complete_guide/screens/user_products_screen.dart';
+import 'package:provider/provider.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const route = '/edit-product';
@@ -12,7 +16,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   String _imageUrl = ''; // final _priceFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
   Product _editedProduct = Product(
-      price: null, id: null, title: null, description: null, imageUrl: null);
+      price: null, id: DateTime.now().toString(), title: null, description: null, imageUrl: null);
   // @override
   void initState() {
     // TODO: implement initState
@@ -24,14 +28,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
     print(myController.text);
   }
 
-  @override
-  void dispose() {
-    myController.dispose();
-    // TODO: implement dispose
-    super.dispose();
-  }
 
-  void _saveForm() {
+
+
+
+
+  void _saveForm(context, product) {
     final _isValid = _form.currentState.validate();
     print(_isValid);
     if (!_isValid) {
@@ -39,15 +41,46 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
 
     _form.currentState.save();
+
+    product != null
+        ? Provider.of<Products>(context, listen: false)
+            .deleteProduct(product.id)
+        : null;
+    Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    Navigator.of(context).pushReplacementNamed(UserProductsScreen.route);
     print(
         '${_editedProduct.description}${_editedProduct.imageUrl}${_editedProduct.price}${_editedProduct.title}');
   }
 
+
+
+
+  @override
+  void dispose() {
+    myController.dispose();
+    // TODO: implement dispose
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final product = ModalRoute.of(context).settings.arguments as Product;
+    product != null ?_editedProduct = product.copyWith(
+        description: product.description,
+        id: product.id,
+        imageUrl: product.imageUrl,
+        isFavorite: product.isFavorite,
+        price: product.price,
+        title: product.title) : null;
+
+    print(product);
+    // print(product.id);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("edytuj produkt"),
+        title: product == null
+            ? Text("Dodaj produkt")
+            : Text("Edytuj produkt ${product.title}"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(28.0),
@@ -59,12 +92,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
               Expanded(
                 child: ListView(children: [
                   TextFormField(
+                    initialValue: product == null ? "" : product.title,
                     decoration: InputDecoration(labelText: 'Nazwa'),
                     textInputAction: TextInputAction.next,
                     onSaved: (val) {
                       print(val);
                       _editedProduct = _editedProduct.copyWith(title: val);
                     },
+
                     validator: (title) {
                       switch (title) {
                         case "":
@@ -83,6 +118,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // },
                   ),
                   TextFormField(
+                    initialValue:
+                        product == null ? "" : product.price.toString(),
                     decoration: InputDecoration(labelText: 'Cena '),
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
@@ -105,6 +142,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // focusNode: _priceFocusNode,
                   ),
                   TextFormField(
+                    initialValue: product == null ? "" : product.description,
                     maxLines: 3,
                     decoration: InputDecoration(labelText: 'Opis '),
                     keyboardType: TextInputType.multiline,
@@ -130,22 +168,26 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           width: 100,
                           decoration:
                               BoxDecoration(border: Border.all(width: 1)),
-                          child: _imageUrl.isEmpty
+                          child: _imageUrl.isEmpty && product == null
                               ? Text('Wpisz url obrazka')
-                              : Image.network(_imageUrl),
+                              : Image.network(
+                                  _imageUrl.isEmpty && product != null
+                                      ? product.imageUrl
+                                      : _imageUrl),
                         ),
                       ),
                       Expanded(
                         child: TextFormField(
+                          initialValue: product == null ? "" : product.imageUrl,
                           decoration: InputDecoration(labelText: 'Image URL'),
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.done,
                           onChanged: (value) {
                             setState(() {
-                              if (!_imageUrl.startsWith('http')) {
-                                return 'Wpisz prawidlowy adres';
-                              } else
-                                _imageUrl = value;
+                              // if (!_imageUrl.startsWith('http')) {
+                              //   return 'Wpisz prawidlowy adres';
+                              // } else
+                              _imageUrl = value;
                             });
                           },
                           validator: (url) {
@@ -155,8 +197,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                               return null;
                           },
                           onSaved: (val) {
-                            _editedProduct =
-                                _editedProduct.copyWith(imageUrl: val);
+                            _editedProduct = _editedProduct.copyWith(
+                              imageUrl: val,
+                            );
                           },
                         ),
                       ),
@@ -173,7 +216,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   // )
                 ]),
               ),
-              ElevatedButton(onPressed: _saveForm, child: Text("Zapisz"))
+              ElevatedButton(
+                  onPressed: () => _saveForm(context, product),
+                  child: Text("Zapisz"))
             ],
           ),
         ),
