@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
-import 'package:flutter_complete_guide/widgets/edit_or_add_product_screen.dart';
+import 'package:flutter_complete_guide/widgets/edit_product_screen.dart';
 import 'package:flutter_complete_guide/widgets/my_drawer.dart';
 import 'package:flutter_complete_guide/widgets/user_product_item.dart';
 import 'package:provider/provider.dart';

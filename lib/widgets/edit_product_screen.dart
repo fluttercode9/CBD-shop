@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
 import 'package:flutter_complete_guide/screens/products_overwiew_screen.dart';
-import 'package:flutter_complete_guide/screens/user_products_screen.dart';
 import 'package:provider/provider.dart';
 
 class EditProductScreen extends StatefulWidget {
@@ -15,6 +14,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final myController = TextEditingController();
   String _imageUrl = ''; // final _priceFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
+  var _isInit = true;
+  Product _passedProd = null;
   Product _editedProduct = Product(
       price: null, id: DateTime.now().toString(), title: null, description: null, imageUrl: null);
   // @override
@@ -24,36 +25,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
     myController.addListener(_printLatestVal);
   }
 
+  @override
+  void didChangeDependencies() {
+    if(_isInit){
+      _passedProd = ModalRoute.of(context).settings.arguments as Product;
+      if (_passedProd!=null){
+        _editedProduct = _passedProd;
+        _imageUrl = _editedProduct.imageUrl;
+      }
+    }
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+  }
+
   void _printLatestVal() {
     print(myController.text);
   }
-
-
-
-
-
-
-  void _saveForm(context, product) {
-    final _isValid = _form.currentState.validate();
-    print(_isValid);
-    if (!_isValid) {
-      return;
-    }
-
-    _form.currentState.save();
-
-    product != null
-        ? Provider.of<Products>(context, listen: false)
-            .deleteProduct(product.id)
-        : null;
-    Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
-    Navigator.of(context).pushReplacementNamed(UserProductsScreen.route);
-    print(
-        '${_editedProduct.description}${_editedProduct.imageUrl}${_editedProduct.price}${_editedProduct.title}');
-  }
-
-
-
 
   @override
   void dispose() {
@@ -62,25 +49,29 @@ class _EditProductScreenState extends State<EditProductScreen> {
     super.dispose();
   }
 
+  void _saveForm() {
+    final _isValid = _form.currentState.validate();
+    print(_isValid);
+    if (!_isValid) {
+      return;
+    }
+    if (_passedProd != null){
+           Provider.of<Products>(context, listen: false).deleteProduct(_editedProduct.id);
+
+    }
+
+    _form.currentState.save();
+     Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+     Navigator.of(context).pushReplacementNamed(ProductOverwiewScreen.route);
+    print(
+        '${_editedProduct.description}${_editedProduct.imageUrl}${_editedProduct.price}${_editedProduct.title}');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final product = ModalRoute.of(context).settings.arguments as Product;
-    product != null ?_editedProduct = product.copyWith(
-        description: product.description,
-        id: product.id,
-        imageUrl: product.imageUrl,
-        isFavorite: product.isFavorite,
-        price: product.price,
-        title: product.title) : null;
-
-    print(product);
-    // print(product.id);
-
     return Scaffold(
       appBar: AppBar(
-        title: product == null
-            ? Text("Dodaj produkt")
-            : Text("Edytuj produkt ${product.title}"),
+        title: Text("edytuj produkt"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(28.0),
@@ -92,14 +83,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
               Expanded(
                 child: ListView(children: [
                   TextFormField(
-                    initialValue: product == null ? "" : product.title,
+                    initialValue: _editedProduct.title,
                     decoration: InputDecoration(labelText: 'Nazwa'),
                     textInputAction: TextInputAction.next,
                     onSaved: (val) {
                       print(val);
                       _editedProduct = _editedProduct.copyWith(title: val);
                     },
-
                     validator: (title) {
                       switch (title) {
                         case "":
@@ -118,8 +108,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // },
                   ),
                   TextFormField(
-                    initialValue:
-                        product == null ? "" : product.price.toString(),
+                    initialValue: _editedProduct.price==null? "" :_editedProduct.price.toString(),
                     decoration: InputDecoration(labelText: 'Cena '),
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
@@ -142,7 +131,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // focusNode: _priceFocusNode,
                   ),
                   TextFormField(
-                    initialValue: product == null ? "" : product.description,
+                    initialValue: _editedProduct.description,
                     maxLines: 3,
                     decoration: InputDecoration(labelText: 'Opis '),
                     keyboardType: TextInputType.multiline,
@@ -168,26 +157,21 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           width: 100,
                           decoration:
                               BoxDecoration(border: Border.all(width: 1)),
-                          child: _imageUrl.isEmpty && product == null
+                          child: _imageUrl.isEmpty
                               ? Text('Wpisz url obrazka')
-                              : Image.network(
-                                  _imageUrl.isEmpty && product != null
-                                      ? product.imageUrl
-                                      : _imageUrl),
+                              : Image.network(_imageUrl),
                         ),
                       ),
                       Expanded(
                         child: TextFormField(
-                          initialValue: product == null ? "" : product.imageUrl,
+                          initialValue: _editedProduct.imageUrl,
                           decoration: InputDecoration(labelText: 'Image URL'),
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.done,
                           onChanged: (value) {
                             setState(() {
-                              // if (!_imageUrl.startsWith('http')) {
-                              //   return 'Wpisz prawidlowy adres';
-                              // } else
-                              _imageUrl = value;
+                             
+                                _imageUrl = value;
                             });
                           },
                           validator: (url) {
@@ -197,9 +181,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                               return null;
                           },
                           onSaved: (val) {
-                            _editedProduct = _editedProduct.copyWith(
-                              imageUrl: val,
-                            );
+                            _editedProduct =
+                                _editedProduct.copyWith(imageUrl: val);
                           },
                         ),
                       ),
@@ -216,9 +199,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   // )
                 ]),
               ),
-              ElevatedButton(
-                  onPressed: () => _saveForm(context, product),
-                  child: Text("Zapisz"))
+              ElevatedButton(onPressed: _saveForm, child: Text("Zapisz"))
             ],
           ),
         ),
