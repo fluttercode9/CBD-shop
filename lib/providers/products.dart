@@ -76,4 +76,9 @@ class Products with ChangeNotifier {
     notifyListeners();
 
   }
+  void updateProduct(id, Product product){
+    final index = _items.indexWhere((element) => element.id == id);
+    _items[index] = product;
+    notifyListeners();
+  }
 }

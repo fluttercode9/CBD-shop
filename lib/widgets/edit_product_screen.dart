@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
 import 'package:flutter_complete_guide/screens/products_overwiew_screen.dart';
+import 'package:flutter_complete_guide/screens/user_products_screen.dart';
 import 'package:provider/provider.dart';
 
 class EditProductScreen extends StatefulWidget {
@@ -17,7 +18,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
   var _isInit = true;
   Product _passedProd = null;
   Product _editedProduct = Product(
-      price: null, id: DateTime.now().toString(), title: null, description: null, imageUrl: null);
+      price: null,
+      id: DateTime.now().toString(),
+      title: null,
+      description: null,
+      imageUrl: null);
   // @override
   void initState() {
     // TODO: implement initState
@@ -27,9 +32,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   @override
   void didChangeDependencies() {
-    if(_isInit){
+    if (_isInit) {
       _passedProd = ModalRoute.of(context).settings.arguments as Product;
-      if (_passedProd!=null){
+      if (_passedProd != null) {
         _editedProduct = _passedProd;
         _imageUrl = _editedProduct.imageUrl;
       }
@@ -55,16 +60,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (!_isValid) {
       return;
     }
-    if (_passedProd != null){
-           Provider.of<Products>(context, listen: false).deleteProduct(_editedProduct.id);
-
-    }
 
     _form.currentState.save();
-     Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
-     Navigator.of(context).pushReplacementNamed(ProductOverwiewScreen.route);
-    print(
-        '${_editedProduct.description}${_editedProduct.imageUrl}${_editedProduct.price}${_editedProduct.title}');
+    if (_passedProd != null) {
+      Provider.of<Products>(context, listen: false)
+          .updateProduct(_editedProduct.id, _editedProduct);
+    } else {
+      Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    }
+
+    Navigator.of(context).pushReplacementNamed(UserProductsScreen.route);
+    
   }
 
   @override
@@ -108,7 +114,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     // },
                   ),
                   TextFormField(
-                    initialValue: _editedProduct.price==null? "" :_editedProduct.price.toString(),
+                    initialValue: _editedProduct.price == null
+                        ? ""
+                        : _editedProduct.price.toString(),
                     decoration: InputDecoration(labelText: 'Cena '),
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
@@ -170,8 +178,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           textInputAction: TextInputAction.done,
                           onChanged: (value) {
                             setState(() {
-                             
-                                _imageUrl = value;
+                              _imageUrl = value;
                             });
                           },
                           validator: (url) {
