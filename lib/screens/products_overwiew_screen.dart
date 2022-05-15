@@ -10,7 +10,7 @@ import '../widgets/products_grid.dart';
 enum filterOptions { Favorites, All }
 
 class ProductOverwiewScreen extends StatefulWidget {
-    static const route = '/';
+  static const route = '/';
 
   @override
   State<ProductOverwiewScreen> createState() => _ProductOverwiewScreenState();
@@ -18,6 +18,28 @@ class ProductOverwiewScreen extends StatefulWidget {
 
 class _ProductOverwiewScreenState extends State<ProductOverwiewScreen> {
   bool _showFavoritesOnly = false;
+  var isInit = true;
+  var isLoading = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (isInit) {
+      isLoading = true;
+      final products = Provider.of<Products>(context);
+      products.fetchProductsFromFirebase().then((_) {
+        isLoading = false;
+      });
+    }
+    isInit = false;
+
+    super.didChangeDependencies();
+  }
+
   @override
   Widget build(BuildContext context) {
     // final cart = Provider.of<Cart>(context);
@@ -49,7 +71,9 @@ class _ProductOverwiewScreenState extends State<ProductOverwiewScreen> {
         ],
         title: Text("Sklep CBD "),
       ),
-      body: ProductsGrid(_showFavoritesOnly),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ProductsGrid(_showFavoritesOnly),
     );
   }
 }

@@ -26,6 +26,7 @@ dependencies:
   provider: ^4.0.0
   badges: ^2.0.2
   intl: ^0.17.0
+  http: ^0.13.4
 
 
 
