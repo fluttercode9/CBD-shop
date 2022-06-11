@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/models/http_exception.dart';
 import 'package:flutter_complete_guide/screens/products_overwiew_screen.dart';
 import './product.dart';
 import 'package:http/http.dart' as http;
@@ -56,7 +57,16 @@ class Products with ChangeNotifier {
       final res = await http.get(url);
       final Map<String, dynamic> extractedData = json.decode(res.body);
       _items = [];
-      extractedData.forEach((id, data)=>_items.add(Product(id: id, description: data['description'], imageUrl: data['imageUrl'], price: data['price'], title: data['title'])));
+      if (extractedData == null) {
+        return;
+      }
+      extractedData.forEach((id, data) => _items.add(Product(
+          id: id,
+          isFavorite: data['isFavorite'],
+          description: data['description'],
+          imageUrl: data['imageUrl'],
+          price: data['price'],
+          title: data['title'])));
       notifyListeners();
     } catch (err) {
       print(err);
@@ -90,17 +100,54 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  void toggleFavorite(id) {
-    findById(id).isFavorite = !findById(id).isFavorite;
+  Future<void> toggleFavorite(id) async {
+    final product = findById(id);
+    final url = Uri.parse(
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json');
+    try {
+      final res = await http.patch(
+        url,
+        body: json.encode(
+          {'isFavorite': !product.isFavorite},
+        ),
+      );
+      if (res.statusCode >= 400) {
+        throw HttpException('something went wrong!');
+      }
+      product.isFavorite = !product.isFavorite;
+      notifyListeners();
+    } catch (err) {
+      print(err);
+    }
+  }
+
+  Future<void> deleteProduct(id) async {
+    final url = Uri.parse(
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json');
+    try {
+      final res = await http.delete(url);
+      if (res.statusCode >= 400) {
+        throw HttpException('Something went wrong :<');
+      }
+      _items.removeWhere((element) => element.id == id);
+    } catch (err) {
+      throw (err);
+      // throw err;
+    }
     notifyListeners();
   }
 
-  void deleteProduct(id) {
-    _items.removeWhere((element) => element.id == id);
-    notifyListeners();
-  }
-
-  void updateProduct(id, Product product) {
+  void updateProduct(id, Product product) async {
+    final url = Uri.parse(
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json');
+    await http.patch(url,
+        body: json.encode({
+          'title': product.title,
+          'description': product.description,
+          'imageUrl': product.imageUrl,
+          'price': product.price,
+          'isFavorite': product.isFavorite,
+        }));
     final index = _items.indexWhere((element) => element.id == id);
     _items[index] = product;
     notifyListeners();
