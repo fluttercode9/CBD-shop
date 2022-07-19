@@ -6,6 +6,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Products with ChangeNotifier {
+  Products(this.authToken, this.uid, this._items);
+  final String authToken;
+  final String uid;
   List<Product> _items = [
     // Product(
     //   id: 'p1',
@@ -52,7 +55,7 @@ class Products with ChangeNotifier {
 
   Future<void> fetchProductsFromFirebase() async {
     final url = Uri.parse(
-        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products.json');
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken');
     try {
       final res = await http.get(url);
       final Map<String, dynamic> extractedData = json.decode(res.body);
@@ -60,13 +63,21 @@ class Products with ChangeNotifier {
       if (extractedData == null) {
         return;
       }
-      extractedData.forEach((id, data) => _items.add(Product(
+      final url_fav = Uri.parse(
+          'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$uid.json?auth=$authToken');
+      final res_fav = await http.get(url_fav);
+      final fav_data = json.decode(res_fav.body);
+
+      extractedData.forEach(
+        (id, data) => _items.add(Product(
           id: id,
-          isFavorite: data['isFavorite'],
           description: data['description'],
           imageUrl: data['imageUrl'],
           price: data['price'],
-          title: data['title'])));
+          title: data['title'],
+          isFavorite:fav_data ==null ? false : fav_data[id] ?? false,
+        )),
+      );
       notifyListeners();
     } catch (err) {
       print(err);
@@ -76,7 +87,7 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product product) async {
     final url = Uri.parse(
-        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products.json');
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products.json?auth=$authToken');
     try {
       final res = await http.post(
         url,
@@ -85,7 +96,6 @@ class Products with ChangeNotifier {
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
         }),
       );
       _items.add(product.copyWith(id: json.decode(res.body)['name']));
@@ -103,18 +113,19 @@ class Products with ChangeNotifier {
   Future<void> toggleFavorite(id) async {
     final product = findById(id);
     final url = Uri.parse(
-        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json');
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/userFavorites/$uid/${id}.json?auth=$authToken');
     try {
-      final res = await http.patch(
+      product.isFavorite = !product.isFavorite;
+
+      final res = await http.put(
         url,
         body: json.encode(
-          {'isFavorite': !product.isFavorite},
+          product.isFavorite,
         ),
       );
       if (res.statusCode >= 400) {
         throw HttpException('something went wrong!');
       }
-      product.isFavorite = !product.isFavorite;
       notifyListeners();
     } catch (err) {
       print(err);
@@ -123,7 +134,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(id) async {
     final url = Uri.parse(
-        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json');
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json?auth=$authToken');
     try {
       final res = await http.delete(url);
       if (res.statusCode >= 400) {
@@ -139,14 +150,13 @@ class Products with ChangeNotifier {
 
   void updateProduct(id, Product product) async {
     final url = Uri.parse(
-        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json');
+        'https://shop-app-2bbe2-default-rtdb.europe-west1.firebasedatabase.app/products/${id}.json?auth=$authToken');
     await http.patch(url,
         body: json.encode({
           'title': product.title,
           'description': product.description,
           'imageUrl': product.imageUrl,
           'price': product.price,
-          'isFavorite': product.isFavorite,
         }));
     final index = _items.indexWhere((element) => element.id == id);
     _items[index] = product;
