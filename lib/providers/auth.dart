@@ -95,5 +95,7 @@ class Auth with ChangeNotifier {
     final timeToExpiry = _expiryDateOfToken.difference(DateTime.now()).inSeconds;
     _authTimer = Timer(Duration(seconds: timeToExpiry), logout);
     notifyListeners();
+    print('hiiiiiiii');
+
   }
 }
