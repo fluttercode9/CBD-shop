@@ -5,7 +5,6 @@ import 'package:flutter_complete_guide/widgets/cart_item.dart' as item;
 import 'package:provider/provider.dart';
 
 class CartScreen extends StatelessWidget {
-
   static const route = "/cart";
   @override
   Widget build(BuildContext context) {
@@ -61,23 +60,53 @@ class SumBar extends StatelessWidget {
                 style: TextStyle(color: Colors.white, fontSize: 25),
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextButton(
-                    onPressed: () {
-                      Provider.of<Orders>(context, listen: false).addOrder(
-                          cart.items.values.toList(), cart.totalAmount);
-                          cart.clear();
-                    },
-                    child: Text(
-                      "DO KASY",
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    )),
-              ),
-            ),
+            OrdedButton(cart: cart),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class OrdedButton extends StatefulWidget {
+  const OrdedButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  State<OrdedButton> createState() => _OrdedButtonState();
+}
+
+class _OrdedButtonState extends State<OrdedButton> {
+  var _isLoading = false;
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: _isLoading ? CircularProgressIndicator() : TextButton(
+            onPressed: widget.cart.totalAmount <= 0 || _isLoading 
+                ? null
+                : () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    await Provider.of<Orders>(context, listen: false)
+                        .addOrder(widget.cart.items.values.toList(),
+                            widget.cart.totalAmount)
+                        .then((value) => _isLoading = false);
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    widget.cart.clear();
+                  },
+            child: Text(
+              "ZAMOW",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            )),
       ),
     );
   }

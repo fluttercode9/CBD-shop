@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
-import 'package:flutter_complete_guide/widgets/edit_product_screen.dart';
+import 'package:flutter_complete_guide/screens/edit_product_screen.dart';
 import 'package:flutter_complete_guide/widgets/my_drawer.dart';
 import 'package:flutter_complete_guide/widgets/user_product_item.dart';
 import 'package:provider/provider.dart';
@@ -19,10 +19,13 @@ class UserProductsScreen extends StatelessWidget {
           child: Icon(Icons.add),
           onPressed: () => Navigator.of(context).pushNamed(EditProductScreen.route, ),
         ),
-        body: ListView(
-          children: products.items
-              .map((e) => UserProductItem(e))
-              .toList(),
+        body: RefreshIndicator(
+          onRefresh:products.fetchProductsFromFirebase,
+          child: ListView(
+            children: products.items
+                .map((e) => UserProductItem(e))
+                .toList(),
+          ),
         ));
   }
 }

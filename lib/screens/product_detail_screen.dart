@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/providers/auth.dart';
 import 'package:flutter_complete_guide/providers/cart.dart';
 import 'package:flutter_complete_guide/providers/product.dart';
 import 'package:flutter_complete_guide/providers/products.dart';
@@ -17,6 +18,9 @@ class ProductDetailScreen extends StatelessWidget {
     );
     final cart = Provider.of<Cart>(context, listen: false);
     final loadedProduct = providerProduct.findById(product.id);
+    final auth = Provider.of<Auth>(context);
+    final token = auth.token;
+    final uid = auth.uid;
     return Scaffold(
       appBar: AppBar(
         title: Text(loadedProduct.title),
@@ -37,7 +41,6 @@ class ProductDetailScreen extends StatelessWidget {
         },
       ),
       body: SingleChildScrollView(
-
         child: Column(
           children: [
             Container(
@@ -56,7 +59,6 @@ class ProductDetailScreen extends StatelessWidget {
               leading: Icon(Icons.description),
               title: Text('${loadedProduct.description}'),
             ),
-
           ],
         ),
       ),
