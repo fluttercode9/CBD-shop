@@ -48,7 +48,14 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.cyan,
               accentColor: Colors.deepPurple,
             ),
-            home: auth.isLoggedIn ? ProductOverwiewScreen() : AuthScreen(),
+            home: auth.isLoggedIn
+                ? ProductOverwiewScreen()
+                : FutureBuilder(
+                    future: auth.tryAutoLogin(),
+                    builder: (ctx, snapshot) =>
+                        snapshot.connectionState == ConnectionState.waiting
+                            ? CircularProgressIndicator()
+                            : AuthScreen()),
             routes: {
               ProductDetailScreen.route: (ctx) => ProductDetailScreen(),
               CartScreen.route: (ctx) => CartScreen(),

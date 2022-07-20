@@ -44,7 +44,10 @@ class MyDrawer extends StatelessWidget {
         ListTile(
           leading: Icon(Icons.logout),
           title: Text('Wyloguj się'),
-          onTap: () => {Provider.of<Auth>(context, listen:false).logout()},
+          onTap: () {
+            Provider.of<Auth>(context, listen: false).logout();
+            Navigator.of(context).pushReplacementNamed('/');
+          },
         )
       ],
     ));
