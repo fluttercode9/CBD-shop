@@ -1,7 +1,6 @@
 # shopapp
 
-![Alt Text](/lib/imgs/g.gif)
-
+<img src="/lib/imgs/g.gif" width = "200"/>
 
 A CBD shop. User is allowed to view products, mark them as favorite, add to cart and purchase.
 
